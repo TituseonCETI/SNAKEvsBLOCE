@@ -5,9 +5,19 @@
 #include <string>
 
 const int GRID_SIZE = 20;
-int WINDOW_WIDTH = 800;
-int WINDOW_HEIGHT = 600;
+const int BASE_WINDOW_WIDTH = 800;
+const int BASE_WINDOW_HEIGHT = 600;
 const int PANEL_WIDTH = 280;
+
+// 🎮 AQUÍ PUEDES CAMBIAR EL TAMAÑO DE LA PANTALLA
+int WINDOW_WIDTH = 800;      // Ancho del área de juego - MODIFICA ESTO
+int WINDOW_HEIGHT = 600;     // Alto del área de juego - MODIFICA ESTO
+int SCREEN_WIDTH = 1080;     // Ancho total (juego + panel) - SE CALCULA AUTOMÁTICAMENTE
+int SCREEN_HEIGHT = 720;     // Alto total - IGUAL AL WINDOW_HEIGHT
+
+float SCALE_X = 1.0f;
+float SCALE_Y = 1.0f;
+int lastApplesEaten = 0;  // Variable para rastrear cambios de manzanas
 
 struct SnakeSegment {
     int x, y;
@@ -50,6 +60,13 @@ struct Obstacle {
         : x(x), y(y), width(GRID_SIZE), height(GRID_SIZE) {}
 };
 
+void calculateScaling() {
+    SCREEN_WIDTH = WINDOW_WIDTH + PANEL_WIDTH;
+    SCREEN_HEIGHT = WINDOW_HEIGHT;
+    SCALE_X = (float)WINDOW_WIDTH / BASE_WINDOW_WIDTH;
+    SCALE_Y = (float)WINDOW_HEIGHT / BASE_WINDOW_HEIGHT;
+}
+
 class GameState {
 public:
     std::vector<SnakeSegment> snake;
@@ -59,7 +76,7 @@ public:
     int score = 0;
     int applesEaten = 0;
     bool gameOver = false;
-    int direction = 1; // 0=arriba, 1=derecha, 2=abajo, 3=izquierda
+    int direction = 1;
     int nextDirection = 1;
     float blockSpawnTimer = 0;
     float blockSpawnDelay = 1.0f;
@@ -71,17 +88,14 @@ public:
     int speedLevel = 1;
     float moveCounter = 0;
     int moveDelay = 10;
-    int windowExpansionCount = 0;
     bool wallPassActive = false;
     float wallPassTimer = 0;
     bool doubleScoreActive = false;
     float doubleScoreTimer = 0;
     bool magnetActive = false;
     float magnetTimer = 0;
-    int baseSpeedBonus = 0;
     
     GameState() {
-        // Inicializar serpiente en el medio
         snake.push_back(SnakeSegment(WINDOW_WIDTH / (2 * GRID_SIZE), WINDOW_HEIGHT / (2 * GRID_SIZE)));
     }
     
@@ -97,12 +111,10 @@ public:
         
         gameTimer += deltaTime;
         
-        // Aumentar velocidad cada 10 segundos + bonificación por manzanas
         speedLevel = 1 + (int)(gameTimer / 10.0f) + (applesEaten / 5);
         moveDelay = 10 - (speedLevel - 1) * 1;
         if (moveDelay < 2) moveDelay = 2;
         
-        // Actualizar timers de power-ups
         if (wallPassActive) {
             wallPassTimer += deltaTime;
             if (wallPassTimer >= 10.0f) {
@@ -129,14 +141,12 @@ public:
         
         direction = nextDirection;
         
-        // Si el imán está activo, atraer manzanas hacia la serpiente
         if (magnetActive && !snake.empty()) {
             SnakeSegment head = snake[0];
             for (auto& block : blocks) {
                 int blockGridX = block.x / GRID_SIZE;
                 int blockGridY = block.y / GRID_SIZE;
                 
-                // Mover la manzana hacia la cabeza
                 if (blockGridX < head.x) blockGridX++;
                 else if (blockGridX > head.x) blockGridX--;
                 
@@ -148,10 +158,8 @@ public:
             }
         }
         
-        // Contador de movimiento basado en velocidad
         moveCounter += speedLevel;
         if (moveCounter < moveDelay) {
-            // Generar power-ups
             powerUpSpawnTimer += 0.016f;
             if (powerUpSpawnTimer >= powerUpSpawnDelay) {
                 int randomX = rand() % (WINDOW_WIDTH / GRID_SIZE);
@@ -172,7 +180,6 @@ public:
                 powerUpSpawnTimer = 0;
             }
             
-            // Generar obstáculos
             obstacleSpawnTimer += 0.016f;
             if (obstacleSpawnTimer >= obstacleSpawnDelay) {
                 int randomX = rand() % (WINDOW_WIDTH / GRID_SIZE);
@@ -195,14 +202,12 @@ public:
         }
         moveCounter = 0;
         
-        // Mover serpiente
         SnakeSegment head = snake[0];
         if (direction == 0) head.y--;
         else if (direction == 1) head.x++;
         else if (direction == 2) head.y++;
         else if (direction == 3) head.x--;
         
-        // Colisión con paredes
         if (!wallPassActive) {
             if (head.x < 0 || head.x >= WINDOW_WIDTH / GRID_SIZE ||
                 head.y < 0 || head.y >= WINDOW_HEIGHT / GRID_SIZE) {
@@ -210,14 +215,12 @@ public:
                 return;
             }
         } else {
-            // Atravesar paredes
             if (head.x < 0) head.x = WINDOW_WIDTH / GRID_SIZE - 1;
             else if (head.x >= WINDOW_WIDTH / GRID_SIZE) head.x = 0;
             if (head.y < 0) head.y = WINDOW_HEIGHT / GRID_SIZE - 1;
             else if (head.y >= WINDOW_HEIGHT / GRID_SIZE) head.y = 0;
         }
         
-        // Colisión consigo misma
         for (const auto& segment : snake) {
             if (head == segment) {
                 gameOver = true;
@@ -225,7 +228,6 @@ public:
             }
         }
         
-        // Colisión con obstáculos
         for (const auto& obstacle : obstacles) {
             if (head.x * GRID_SIZE == obstacle.x && head.y * GRID_SIZE == obstacle.y) {
                 gameOver = true;
@@ -235,7 +237,6 @@ public:
         
         snake.insert(snake.begin(), head);
         
-        // Comprobar colisión con bloques (manzanas)
         bool ateBlock = false;
         for (auto it = blocks.begin(); it != blocks.end(); ++it) {
             if (head.x * GRID_SIZE == it->x && head.y * GRID_SIZE == it->y) {
@@ -244,18 +245,10 @@ public:
                 applesEaten++;
                 blocks.erase(it);
                 ateBlock = true;
-                
-                // Expandir pantalla cada 5 manzanas
-                if (applesEaten % 5 == 0) {
-                    WINDOW_WIDTH += 100;
-                    WINDOW_HEIGHT += 100;
-                    windowExpansionCount++;
-                }
                 break;
             }
         }
         
-        // Comprobar colisión con power-ups
         for (auto it = powerUps.begin(); it != powerUps.end(); ++it) {
             if (head.x * GRID_SIZE == it->x && head.y * GRID_SIZE == it->y) {
                 if (it->type == WALL_PASS) {
@@ -273,19 +266,15 @@ public:
             }
         }
         
-        // La serpiente siempre crece (no elimina cola si comió)
-        // Si no comió, elimina la cola para mantener tamaño
         if (!ateBlock && snake.size() > 1) {
             snake.pop_back();
         }
         
-        // Generar bloques aleatoriamente
         blockSpawnTimer += 0.016f;
         if (blockSpawnTimer >= blockSpawnDelay) {
             int randomX = rand() % (WINDOW_WIDTH / GRID_SIZE);
             int randomY = rand() % (WINDOW_HEIGHT / GRID_SIZE);
             
-            // Evitar que aparezcan en la serpiente
             bool onSnake = false;
             for (const auto& segment : snake) {
                 if (segment.x == randomX && segment.y == randomY) {
@@ -303,75 +292,67 @@ public:
     }
     
     void draw(sf::RenderWindow& window) {
-        // Dibujar serpiente
         for (const auto& segment : snake) {
-            sf::RectangleShape rect(sf::Vector2f(GRID_SIZE - 2, GRID_SIZE - 2));
-            rect.setPosition(segment.x * GRID_SIZE + 1, segment.y * GRID_SIZE + 1);
+            sf::RectangleShape rect(sf::Vector2f((GRID_SIZE - 2) * SCALE_X, (GRID_SIZE - 2) * SCALE_Y));
+            rect.setPosition(segment.x * GRID_SIZE * SCALE_X + SCALE_X, segment.y * GRID_SIZE * SCALE_Y + SCALE_Y);
             rect.setFillColor(sf::Color::Green);
             window.draw(rect);
         }
         
-        // Dibujar bloques (manzanas)
         for (const auto& block : blocks) {
-            sf::RectangleShape rect(sf::Vector2f(block.width - 2, block.height - 2));
-            rect.setPosition(block.x + 1, block.y + 1);
+            sf::RectangleShape rect(sf::Vector2f((block.width - 2) * SCALE_X, (block.height - 2) * SCALE_Y));
+            rect.setPosition(block.x * SCALE_X + SCALE_X, block.y * SCALE_Y + SCALE_Y);
             rect.setFillColor(sf::Color::Red);
             window.draw(rect);
         }
         
-        // Dibujar power-ups
         for (const auto& powerUp : powerUps) {
-            sf::RectangleShape rect(sf::Vector2f(powerUp.width - 2, powerUp.height - 2));
-            rect.setPosition(powerUp.x + 1, powerUp.y + 1);
+            sf::RectangleShape rect(sf::Vector2f((powerUp.width - 2) * SCALE_X, (powerUp.height - 2) * SCALE_Y));
+            rect.setPosition(powerUp.x * SCALE_X + SCALE_X, powerUp.y * SCALE_Y + SCALE_Y);
             if (powerUp.type == WALL_PASS) {
                 rect.setFillColor(sf::Color::Yellow);
             } else if (powerUp.type == DOUBLE_SCORE) {
                 rect.setFillColor(sf::Color::Magenta);
             } else if (powerUp.type == MAGNET) {
-                rect.setFillColor(sf::Color(255, 165, 0)); // Naranja
+                rect.setFillColor(sf::Color(255, 165, 0));
             }
             window.draw(rect);
         }
         
-        // Dibujar obstáculos
         for (const auto& obstacle : obstacles) {
-            sf::RectangleShape rect(sf::Vector2f(obstacle.width - 2, obstacle.height - 2));
-            rect.setPosition(obstacle.x + 1, obstacle.y + 1);
+            sf::RectangleShape rect(sf::Vector2f((obstacle.width - 2) * SCALE_X, (obstacle.height - 2) * SCALE_Y));
+            rect.setPosition(obstacle.x * SCALE_X + SCALE_X, obstacle.y * SCALE_Y + SCALE_Y);
             rect.setFillColor(sf::Color::Cyan);
             window.draw(rect);
         }
         
-        // Línea blanca divisoria entre mapa y panel
-        sf::RectangleShape dividerLine(sf::Vector2f(2, WINDOW_HEIGHT));
-        dividerLine.setPosition(WINDOW_WIDTH, 0);
+        sf::RectangleShape dividerLine(sf::Vector2f(2, WINDOW_HEIGHT * SCALE_Y));
+        dividerLine.setPosition(WINDOW_WIDTH * SCALE_X, 0);
         dividerLine.setFillColor(sf::Color::White);
         window.draw(dividerLine);
     }
     
     void drawUI(sf::RenderWindow& window) {
-        // Fondo para información en el lado derecho (fuera del mapa)
-        sf::RectangleShape infoBg(sf::Vector2f(PANEL_WIDTH - 10, WINDOW_HEIGHT));
-        infoBg.setPosition(WINDOW_WIDTH + 5, 0);
+        int panelStartX = WINDOW_WIDTH * SCALE_X;
+        
+        sf::RectangleShape infoBg(sf::Vector2f(PANEL_WIDTH - 10, WINDOW_HEIGHT * SCALE_Y));
+        infoBg.setPosition(panelStartX + 5, 0);
         infoBg.setFillColor(sf::Color(0, 0, 0, 200));
         window.draw(infoBg);
         
-        int panelX = WINDOW_WIDTH + 15;
+        int panelX = panelStartX + 15;
         int yPos = 10;
         
-        // Línea separadora
         sf::RectangleShape separator(sf::Vector2f(PANEL_WIDTH - 20, 1));
         separator.setPosition(panelX, yPos + 25);
         separator.setFillColor(sf::Color::White);
         window.draw(separator);
         
-        // SCORE (Puntuación numérica con barra visual)
-        // Fondo del score
         sf::RectangleShape scoreBg(sf::Vector2f(PANEL_WIDTH - 20, 25));
         scoreBg.setPosition(panelX, yPos);
         scoreBg.setFillColor(sf::Color(50, 50, 50));
         window.draw(scoreBg);
         
-        // Barra de score visual
         int scoreBarWidth = (score / 10) % (PANEL_WIDTH - 20);
         sf::RectangleShape scoreBar(sf::Vector2f(scoreBarWidth, 3));
         scoreBar.setPosition(panelX, yPos + 22);
@@ -380,8 +361,6 @@ public:
         
         yPos += 35;
         
-        // Indicador de manzanas comidas con número
-        // Cuadro rojo para las manzanas
         sf::RectangleShape applesBox(sf::Vector2f(50, 18));
         applesBox.setPosition(panelX, yPos);
         applesBox.setFillColor(sf::Color(100, 0, 0));
@@ -389,13 +368,11 @@ public:
         applesBox.setOutlineThickness(2);
         window.draw(applesBox);
         
-        // Pequeño círculo rojo para representar manzana
         sf::RectangleShape appleIndicator(sf::Vector2f(8, 8));
         appleIndicator.setPosition(panelX + 5, yPos + 5);
         appleIndicator.setFillColor(sf::Color::Red);
         window.draw(appleIndicator);
         
-        // Barra visual de manzanas (número de manzanas consumidas en barras)
         for (int i = 0; i < applesEaten && i < 12; i++) {
             sf::RectangleShape appleBar(sf::Vector2f(3, 10));
             appleBar.setPosition(panelX + 18 + i * 3, yPos + 4);
@@ -405,7 +382,6 @@ public:
         
         yPos += 30;
         
-        // Speed level visual
         sf::RectangleShape speedLabel(sf::Vector2f(PANEL_WIDTH - 20, 3));
         speedLabel.setPosition(panelX, yPos);
         speedLabel.setFillColor(sf::Color::Yellow);
@@ -420,23 +396,18 @@ public:
         
         yPos += 30;
         
-        // Power-ups con cronómetro
-        // Wall Pass active indicator con barra de tiempo
         if (wallPassActive) {
-            // Fondo del power-up
             sf::RectangleShape wallPassBg(sf::Vector2f(PANEL_WIDTH - 20, 35));
             wallPassBg.setPosition(panelX, yPos);
             wallPassBg.setFillColor(sf::Color(100, 100, 0));
             window.draw(wallPassBg);
             
-            // Barra de duración
             float wallPassProgress = wallPassTimer / 10.0f;
             sf::RectangleShape wallPassBar(sf::Vector2f((PANEL_WIDTH - 20) * (1.0f - wallPassProgress), 5));
             wallPassBar.setPosition(panelX, yPos + 28);
             wallPassBar.setFillColor(sf::Color::Yellow);
             window.draw(wallPassBar);
             
-            // Borde del power-up
             sf::RectangleShape wallPassBorder(sf::Vector2f(PANEL_WIDTH - 20, 35));
             wallPassBorder.setPosition(panelX, yPos);
             wallPassBorder.setFillColor(sf::Color::Transparent);
@@ -447,22 +418,18 @@ public:
             yPos += 40;
         }
         
-        // Double Score active indicator con barra de tiempo
         if (doubleScoreActive) {
-            // Fondo del power-up
             sf::RectangleShape doubleScoreBg(sf::Vector2f(PANEL_WIDTH - 20, 35));
             doubleScoreBg.setPosition(panelX, yPos);
             doubleScoreBg.setFillColor(sf::Color(100, 0, 100));
             window.draw(doubleScoreBg);
             
-            // Barra de duración
             float doubleScoreProgress = doubleScoreTimer / 10.0f;
             sf::RectangleShape doubleScoreBar(sf::Vector2f((PANEL_WIDTH - 20) * (1.0f - doubleScoreProgress), 5));
             doubleScoreBar.setPosition(panelX, yPos + 28);
             doubleScoreBar.setFillColor(sf::Color::Magenta);
             window.draw(doubleScoreBar);
             
-            // Borde del power-up
             sf::RectangleShape doubleScoreBorder(sf::Vector2f(PANEL_WIDTH - 20, 35));
             doubleScoreBorder.setPosition(panelX, yPos);
             doubleScoreBorder.setFillColor(sf::Color::Transparent);
@@ -473,26 +440,22 @@ public:
             yPos += 40;
         }
         
-        // Magnet active indicator con barra de tiempo
         if (magnetActive) {
-            // Fondo del power-up
             sf::RectangleShape magnetBg(sf::Vector2f(PANEL_WIDTH - 20, 35));
             magnetBg.setPosition(panelX, yPos);
-            magnetBg.setFillColor(sf::Color(165, 100, 0)); // Naranja oscuro
+            magnetBg.setFillColor(sf::Color(165, 100, 0));
             window.draw(magnetBg);
             
-            // Barra de duración
             float magnetProgress = magnetTimer / 10.0f;
             sf::RectangleShape magnetBar(sf::Vector2f((PANEL_WIDTH - 20) * (1.0f - magnetProgress), 5));
             magnetBar.setPosition(panelX, yPos + 28);
-            magnetBar.setFillColor(sf::Color(255, 165, 0)); // Naranja
+            magnetBar.setFillColor(sf::Color(255, 165, 0));
             window.draw(magnetBar);
             
-            // Borde del power-up
             sf::RectangleShape magnetBorder(sf::Vector2f(PANEL_WIDTH - 20, 35));
             magnetBorder.setPosition(panelX, yPos);
             magnetBorder.setFillColor(sf::Color::Transparent);
-            magnetBorder.setOutlineColor(sf::Color(255, 165, 0)); // Naranja
+            magnetBorder.setOutlineColor(sf::Color(255, 165, 0));
             magnetBorder.setOutlineThickness(2);
             window.draw(magnetBorder);
         }
@@ -502,7 +465,10 @@ public:
 int main() {
     srand(static_cast<unsigned>(time(0)));
     
-    sf::RenderWindow window(sf::VideoMode(WINDOW_WIDTH + PANEL_WIDTH, WINDOW_HEIGHT), "Snake vs Blocks");
+    calculateScaling();
+    
+    // Crear ventana con el tamaño definido
+    sf::RenderWindow window(sf::VideoMode(SCREEN_WIDTH, SCREEN_HEIGHT), "Snake vs Blocks");
     window.setFramerateLimit(60);
     
     GameState game;
@@ -518,20 +484,13 @@ int main() {
                     window.close();
                 if (event.key.scancode == sf::Keyboard::Scan::R && game.gameOver) {
                     game = GameState();
-                    WINDOW_WIDTH = 800;
-                    WINDOW_HEIGHT = 600;
-                    window.setSize(sf::Vector2u(WINDOW_WIDTH + PANEL_WIDTH, WINDOW_HEIGHT));
+                    lastApplesEaten = 0;
                 }
                 game.handleInput(event.key.scancode);
             }
         }
         
         game.update(0.016f);
-        
-        // Actualizar tamaño de ventana si cambió
-        if (window.getSize().x != WINDOW_WIDTH + PANEL_WIDTH || window.getSize().y != WINDOW_HEIGHT) {
-            window.setSize(sf::Vector2u(WINDOW_WIDTH + PANEL_WIDTH, WINDOW_HEIGHT));
-        }
         
         window.clear(sf::Color::Black);
         game.draw(window);
