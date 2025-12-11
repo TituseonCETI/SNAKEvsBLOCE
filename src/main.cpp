@@ -3,21 +3,26 @@
 #include <cstdlib>
 #include <ctime>
 #include <string>
+#include <sstream>
 
 const int GRID_SIZE = 20;
 const int BASE_WINDOW_WIDTH = 800;
 const int BASE_WINDOW_HEIGHT = 600;
 const int PANEL_WIDTH = 280;
 
-// 🎮 AQUÍ PUEDES CAMBIAR EL TAMAÑO DE LA PANTALLA
-int WINDOW_WIDTH = 800;      // Ancho del área de juego - MODIFICA ESTO
-int WINDOW_HEIGHT = 600;     // Alto del área de juego - MODIFICA ESTO
-int SCREEN_WIDTH = 1080;     // Ancho total (juego + panel) - SE CALCULA AUTOMÁTICAMENTE
-int SCREEN_HEIGHT = 720;     // Alto total - IGUAL AL WINDOW_HEIGHT
-
+int WINDOW_WIDTH = 800;
+int WINDOW_HEIGHT = 600;
+int SCREEN_WIDTH = 1080;
+int SCREEN_HEIGHT = 720;
 float SCALE_X = 1.0f;
 float SCALE_Y = 1.0f;
-int lastApplesEaten = 0;  // Variable para rastrear cambios de manzanas
+
+enum GameState_Type {
+    MENU,
+    PLAYING,
+    RULES,
+    GAME_OVER
+};
 
 struct SnakeSegment {
     int x, y;
@@ -66,6 +71,81 @@ void calculateScaling() {
     SCALE_X = (float)WINDOW_WIDTH / BASE_WINDOW_WIDTH;
     SCALE_Y = (float)WINDOW_HEIGHT / BASE_WINDOW_HEIGHT;
 }
+
+class Menu {
+public:
+    int selectedOption = 0;
+    
+    void handleInput(sf::Keyboard::Scancode key) {
+        if (key == sf::Keyboard::Scan::Up && selectedOption > 0) {
+            selectedOption--;
+        } else if (key == sf::Keyboard::Scan::Down && selectedOption < 2) {
+            selectedOption++;
+        }
+    }
+    
+    void draw(sf::RenderWindow& window) {
+        window.clear(sf::Color::Black);
+        
+        // Título
+        sf::RectangleShape titleBg(sf::Vector2f(SCREEN_WIDTH, 100));
+        titleBg.setPosition(0, 50);
+        titleBg.setFillColor(sf::Color(50, 50, 50));
+        window.draw(titleBg);
+        
+        // Opciones del menú
+        std::vector<std::string> options = {"INICIAR JUEGO", "REGLAS", "SALIR"};
+        std::vector<sf::Color> colors = {sf::Color::Green, sf::Color::Yellow, sf::Color::Red};
+        
+        for (int i = 0; i < options.size(); i++) {
+            sf::RectangleShape optionBg(sf::Vector2f(300, 60));
+            optionBg.setPosition(SCREEN_WIDTH / 2 - 150, 200 + i * 100);
+            
+            if (i == selectedOption) {
+                optionBg.setFillColor(colors[i]);
+                optionBg.setOutlineColor(sf::Color::White);
+                optionBg.setOutlineThickness(3);
+            } else {
+                optionBg.setFillColor(sf::Color(50, 50, 50));
+                optionBg.setOutlineColor(colors[i]);
+                optionBg.setOutlineThickness(2);
+            }
+            
+            window.draw(optionBg);
+        }
+    }
+    
+    int getSelectedOption() {
+        return selectedOption;
+    }
+};
+
+class Rules {
+public:
+    void draw(sf::RenderWindow& window) {
+        window.clear(sf::Color::Black);
+        
+        // Título
+        sf::RectangleShape titleBg(sf::Vector2f(SCREEN_WIDTH, 80));
+        titleBg.setPosition(0, 20);
+        titleBg.setFillColor(sf::Color(50, 50, 50));
+        window.draw(titleBg);
+        
+        // Caja de reglas
+        sf::RectangleShape rulesBg(sf::Vector2f(SCREEN_WIDTH - 40, SCREEN_HEIGHT - 120));
+        rulesBg.setPosition(20, 120);
+        rulesBg.setFillColor(sf::Color(30, 30, 30));
+        rulesBg.setOutlineColor(sf::Color::White);
+        rulesBg.setOutlineThickness(2);
+        window.draw(rulesBg);
+        
+        // Instrucciones de salida
+        sf::RectangleShape exitBg(sf::Vector2f(SCREEN_WIDTH - 40, 50));
+        exitBg.setPosition(20, SCREEN_HEIGHT - 60);
+        exitBg.setFillColor(sf::Color(50, 50, 0));
+        window.draw(exitBg);
+    }
+};
 
 class GameState {
 public:
@@ -462,15 +542,140 @@ public:
     }
 };
 
+class GameOverMenu {
+public:
+    bool isVisible = false;
+    int finalScore = 0;
+    int finalApplesEaten = 0;
+    int selectedOption = 0;  // 0 = Reiniciar, 1 = Salir
+    
+    void show(int score, int applesEaten) {
+        isVisible = true;
+        finalScore = score;
+        finalApplesEaten = applesEaten;
+        selectedOption = 0;
+    }
+    
+    void handleInput(sf::Keyboard::Scancode key) {
+        if (key == sf::Keyboard::Scan::Left || key == sf::Keyboard::Scan::Up) {
+            selectedOption = 0;
+        } else if (key == sf::Keyboard::Scan::Right || key == sf::Keyboard::Scan::Down) {
+            selectedOption = 1;
+        }
+    }
+    
+    void draw(sf::RenderWindow& window) {
+        if (!isVisible) return;
+        
+        // Fondo oscuro semitransparente
+        sf::RectangleShape background(sf::Vector2f(SCREEN_WIDTH, SCREEN_HEIGHT));
+        background.setFillColor(sf::Color(0, 0, 0, 150));
+        window.draw(background);
+        
+        // Cuadro principal
+        int menuWidth = 500;
+        int menuHeight = 400;
+        int menuX = (SCREEN_WIDTH - menuWidth) / 2;
+        int menuY = (SCREEN_HEIGHT - menuHeight) / 2;
+        
+        sf::RectangleShape menuBox(sf::Vector2f(menuWidth, menuHeight));
+        menuBox.setPosition(menuX, menuY);
+        menuBox.setFillColor(sf::Color(30, 30, 30));
+        menuBox.setOutlineColor(sf::Color::Red);
+        menuBox.setOutlineThickness(3);
+        window.draw(menuBox);
+        
+        // Título "GAME OVER"
+        sf::RectangleShape titleBg(sf::Vector2f(menuWidth, 60));
+        titleBg.setPosition(menuX, menuY);
+        titleBg.setFillColor(sf::Color::Red);
+        window.draw(titleBg);
+        
+        // Puntaje
+        int yOffset = menuY + 80;
+        
+        sf::RectangleShape scoreLabel(sf::Vector2f(150, 20));
+        scoreLabel.setPosition(menuX + 20, yOffset);
+        scoreLabel.setFillColor(sf::Color::Green);
+        window.draw(scoreLabel);
+        
+        std::ostringstream scoreStr;
+        scoreStr << "SCORE: " << finalScore;
+        
+        // Mostrar score (usando líneas para simular números)
+        yOffset += 30;
+        sf::RectangleShape scoreLine(sf::Vector2f(300, 2));
+        scoreLine.setPosition(menuX + 100, yOffset);
+        scoreLine.setFillColor(sf::Color::Green);
+        window.draw(scoreLine);
+        
+        // Manzanas comidas
+        yOffset += 40;
+        sf::RectangleShape applesLabel(sf::Vector2f(200, 20));
+        applesLabel.setPosition(menuX + 20, yOffset);
+        applesLabel.setFillColor(sf::Color::Yellow);
+        window.draw(applesLabel);
+        
+        std::ostringstream applesStr;
+        applesStr << "MANZANAS: " << finalApplesEaten;
+        
+        yOffset += 30;
+        sf::RectangleShape applesLine(sf::Vector2f(300, 2));
+        applesLine.setPosition(menuX + 100, yOffset);
+        applesLine.setFillColor(sf::Color::Yellow);
+        window.draw(applesLine);
+        
+        // Botones: Reiniciar y Salir
+        yOffset += 50;
+        
+        // Botón Reiniciar
+        sf::RectangleShape restartBtn(sf::Vector2f(150, 50));
+        restartBtn.setPosition(menuX + 50, yOffset);
+        restartBtn.setFillColor(selectedOption == 0 ? sf::Color::Green : sf::Color(0, 100, 0));
+        restartBtn.setOutlineColor(selectedOption == 0 ? sf::Color::White : sf::Color::Green);
+        restartBtn.setOutlineThickness(2);
+        window.draw(restartBtn);
+        
+        // Botón Salir
+        sf::RectangleShape exitBtn(sf::Vector2f(150, 50));
+        exitBtn.setPosition(menuX + 300, yOffset);
+        exitBtn.setFillColor(selectedOption == 1 ? sf::Color::Red : sf::Color(100, 0, 0));
+        exitBtn.setOutlineColor(selectedOption == 1 ? sf::Color::White : sf::Color::Red);
+        exitBtn.setOutlineThickness(2);
+        window.draw(exitBtn);
+        
+        // Labels de botones (usando líneas)
+        yOffset += 15;
+        
+        // "REINICIAR" en botón izquierdo
+        for (int i = 0; i < 4; i++) {
+            sf::RectangleShape line(sf::Vector2f(30, 2));
+            line.setPosition(menuX + 60 + i * 25, yOffset);
+            line.setFillColor(sf::Color::White);
+            window.draw(line);
+        }
+        
+        // "SALIR" en botón derecho
+        for (int i = 0; i < 3; i++) {
+            sf::RectangleShape line(sf::Vector2f(30, 2));
+            line.setPosition(menuX + 310 + i * 25, yOffset);
+            line.setFillColor(sf::Color::White);
+            window.draw(line);
+        }
+    }
+};
+
 int main() {
     srand(static_cast<unsigned>(time(0)));
     
     calculateScaling();
     
-    // Crear ventana con el tamaño definido
     sf::RenderWindow window(sf::VideoMode(SCREEN_WIDTH, SCREEN_HEIGHT), "Snake vs Blocks");
     window.setFramerateLimit(60);
     
+    GameState_Type gameState = MENU;
+    Menu menu;
+    Rules rules;
     GameState game;
     
     while (window.isOpen()) {
@@ -480,21 +685,56 @@ int main() {
                 window.close();
             
             if (event.type == sf::Event::KeyPressed) {
-                if (event.key.scancode == sf::Keyboard::Scan::Escape)
-                    window.close();
-                if (event.key.scancode == sf::Keyboard::Scan::R && game.gameOver) {
-                    game = GameState();
-                    lastApplesEaten = 0;
+                if (event.key.scancode == sf::Keyboard::Scan::Escape) {
+                    if (gameState == PLAYING || gameState == GAME_OVER) {
+                        gameState = MENU;
+                        game = GameState();
+                    } else if (gameState == RULES) {
+                        gameState = MENU;
+                    } else {
+                        window.close();
+                    }
                 }
-                game.handleInput(event.key.scancode);
+                
+                if (gameState == MENU) {
+                    menu.handleInput(event.key.scancode);
+                    
+                    if (event.key.scancode == sf::Keyboard::Scan::Enter) {
+                        int option = menu.getSelectedOption();
+                        if (option == 0) {
+                            gameState = PLAYING;
+                            game = GameState();
+                        } else if (option == 1) {
+                            gameState = RULES;
+                        } else if (option == 2) {
+                            window.close();
+                        }
+                    }
+                } else if (gameState == RULES) {
+                    if (event.key.scancode == sf::Keyboard::Scan::Enter) {
+                        gameState = MENU;
+                        menu.selectedOption = 0;
+                    }
+                } else if (gameState == PLAYING) {
+                    if (event.key.scancode == sf::Keyboard::Scan::R && game.gameOver) {
+                        game = GameState();
+                    }
+                    game.handleInput(event.key.scancode);
+                }
             }
         }
         
-        game.update(0.016f);
-        
-        window.clear(sf::Color::Black);
-        game.draw(window);
-        game.drawUI(window);
+        if (gameState == MENU) {
+            menu.draw(window);
+        } else if (gameState == RULES) {
+            rules.draw(window);
+        } else if (gameState == PLAYING) {
+            game.update(0.016f);
+            
+            window.clear(sf::Color::Black);
+            game.draw(window);
+            game.drawUI(window);
+        }
         
         window.display();
     }
