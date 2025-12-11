@@ -17,6 +17,8 @@ int SCREEN_HEIGHT = 720;
 float SCALE_X = 1.0f;
 float SCALE_Y = 1.0f;
 
+sf::Texture tex;
+
 enum GameState_Type {
     MENU,
     PLAYING,
@@ -95,8 +97,12 @@ public:
         
         // Opciones del menú
         std::vector<std::string> options = {"INICIAR JUEGO", "REGLAS", "SALIR"};
-        std::vector<sf::Color> colors = {sf::Color::Green, sf::Color::Yellow, sf::Color::Red};
+        std::vector<sf::Color> colors = {sf::Color::Red, sf::Color::Yellow, sf::Color::Red};
         
+        sf::RectangleShape optionBg3(sf::Vector2f(1080, 600));
+        optionBg3.setPosition(sf::Vector2f(0, 0));
+        optionBg3.setTexture(&tex);
+        window.draw(optionBg3);
         for (int i = 0; i < options.size(); i++) {
             sf::RectangleShape optionBg(sf::Vector2f(300, 60));
             optionBg.setPosition(SCREEN_WIDTH / 2 - 150, 200 + i * 100);
@@ -640,7 +646,7 @@ public:
         sf::RectangleShape exitBtn(sf::Vector2f(150, 50));
         exitBtn.setPosition(menuX + 300, yOffset);
         exitBtn.setFillColor(selectedOption == 1 ? sf::Color::Red : sf::Color(100, 0, 0));
-        exitBtn.setOutlineColor(selectedOption == 1 ? sf::Color::White : sf::Color::Red);
+        exitBtn.setOutlineColor(selectedOption == 1 ? sf::Color::Black : sf::Color::Black);
         exitBtn.setOutlineThickness(2);
         window.draw(exitBtn);
         
@@ -673,6 +679,7 @@ int main() {
     sf::RenderWindow window(sf::VideoMode(SCREEN_WIDTH, SCREEN_HEIGHT), "Snake vs Blocks");
     window.setFramerateLimit(60);
     
+    tex.loadFromFile("C:/Users/Bienvenido/Desktop/SNAKEvsBLOCE/assets/images/Menu.Fondo.png.png");
     GameState_Type gameState = MENU;
     Menu menu;
     Rules rules;
