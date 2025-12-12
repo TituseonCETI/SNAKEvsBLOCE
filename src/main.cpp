@@ -466,7 +466,25 @@ public:
             window.draw(appleBar);
         }
         
-        yPos += 30;
+        // Mostrar puntos por manzana
+        int pointsPerApple = doubleScoreActive ? 20 : 10;
+
+        sf::RectangleShape pointsBox(sf::Vector2f(PANEL_WIDTH - 20, 22));
+        pointsBox.setPosition(panelX, yPos);
+        pointsBox.setFillColor(sf::Color(0, 120, 0));
+        pointsBox.setOutlineColor(sf::Color::Green);
+        pointsBox.setOutlineThickness(1);
+        window.draw(pointsBox);
+
+        // Dibuja barras pequeñas para representar el valor
+        for (int i = 0; i < pointsPerApple / 10; i++) {
+            sf::RectangleShape pointBar(sf::Vector2f(4, 15));
+            pointBar.setPosition(panelX + 5 + i * 6, yPos + 3);
+            pointBar.setFillColor(sf::Color::Green);
+            window.draw(pointBar);
+        }
+
+        yPos += 28;
         
         sf::RectangleShape speedLabel(sf::Vector2f(PANEL_WIDTH - 20, 3));
         speedLabel.setPosition(panelX, yPos);
