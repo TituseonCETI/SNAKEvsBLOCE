@@ -338,10 +338,6 @@ public:
         snake.insert(snake.begin(), head);
         
         bool ateBlock = false;
-            // Copias para duplicar al recoger DOUBLE_SCORE
-            std::vector<Block> blocksCopy = blocks;
-            std::vector<PowerUp> powerUpsCopy = powerUps;
-            std::vector<Obstacle> obstaclesCopy = obstacles;
         for (auto it = blocks.begin(); it != blocks.end(); ++it) {
             if (head.x * GRID_SIZE == it->x && head.y * GRID_SIZE == it->y) {
                 int points = doubleScoreActive ? 20 : 10;
@@ -361,19 +357,6 @@ public:
                 } else if (it->type == DOUBLE_SCORE) {
                     doubleScoreActive = true;
                     doubleScoreTimer = 0;
-
-                    // Duplicar usando las copias
-                    for (const auto& block : blocksCopy) {
-                        blocks.push_back(block);
-                    }
-                    for (const auto& powerUp : powerUpsCopy) {
-                        if (!(powerUp.x == it->x && powerUp.y == it->y)) {
-                            powerUps.push_back(powerUp);
-                        }
-                    }
-                    for (const auto& obstacle : obstaclesCopy) {
-                        obstacles.push_back(obstacle);
-                    }
                 } else if (it->type == MAGNET) {
                     magnetActive = true;
                     magnetTimer = 0;
