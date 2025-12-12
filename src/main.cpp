@@ -197,7 +197,7 @@ public:
         
         gameTimer += deltaTime;
         
-        speedLevel = 1 + (int)(gameTimer / 10.0f) + (applesEaten / 5);
+        speedLevel = 1 + (applesEaten / 5);
         moveDelay = 10 - (speedLevel - 1) * 1;
         if (moveDelay < 2) moveDelay = 2;
         
