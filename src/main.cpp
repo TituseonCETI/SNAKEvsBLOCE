@@ -519,69 +519,7 @@ public:
         
         yPos += 30;
         
-        if (wallPassActive) {
-            sf::RectangleShape wallPassBg(sf::Vector2f(PANEL_WIDTH - 20, 35));
-            wallPassBg.setPosition(panelX, yPos);
-            wallPassBg.setFillColor(sf::Color(100, 100, 0));
-            window.draw(wallPassBg);
-            
-            float wallPassProgress = wallPassTimer / 10.0f;
-            sf::RectangleShape wallPassBar(sf::Vector2f((PANEL_WIDTH - 20) * (1.0f - wallPassProgress), 5));
-            wallPassBar.setPosition(panelX, yPos + 28);
-            wallPassBar.setFillColor(sf::Color::Yellow);
-            window.draw(wallPassBar);
-            
-            sf::RectangleShape wallPassBorder(sf::Vector2f(PANEL_WIDTH - 20, 35));
-            wallPassBorder.setPosition(panelX, yPos);
-            wallPassBorder.setFillColor(sf::Color::Transparent);
-            wallPassBorder.setOutlineColor(sf::Color::Yellow);
-            wallPassBorder.setOutlineThickness(2);
-            window.draw(wallPassBorder);
-            
-            yPos += 40;
-        }
-        
-        if (doubleScoreActive) {
-            sf::RectangleShape doubleScoreBg(sf::Vector2f(PANEL_WIDTH - 20, 35));
-            doubleScoreBg.setPosition(panelX, yPos);
-            doubleScoreBg.setFillColor(sf::Color(100, 0, 100));
-            window.draw(doubleScoreBg);
-            
-            float doubleScoreProgress = doubleScoreTimer / 10.0f;
-            sf::RectangleShape doubleScoreBar(sf::Vector2f((PANEL_WIDTH - 20) * (1.0f - doubleScoreProgress), 5));
-            doubleScoreBar.setPosition(panelX, yPos + 28);
-            doubleScoreBar.setFillColor(sf::Color::Magenta);
-            window.draw(doubleScoreBar);
-            
-            sf::RectangleShape doubleScoreBorder(sf::Vector2f(PANEL_WIDTH - 20, 35));
-            doubleScoreBorder.setPosition(panelX, yPos);
-            doubleScoreBorder.setFillColor(sf::Color::Transparent);
-            doubleScoreBorder.setOutlineColor(sf::Color::Magenta);
-            doubleScoreBorder.setOutlineThickness(2);
-            window.draw(doubleScoreBorder);
-            
-            yPos += 40;
-        }
-        
-        if (magnetActive) {
-            sf::RectangleShape magnetBg(sf::Vector2f(PANEL_WIDTH - 20, 35));
-            magnetBg.setPosition(panelX, yPos);
-            magnetBg.setFillColor(sf::Color(165, 100, 0));
-            window.draw(magnetBg);
-            
-            float magnetProgress = magnetTimer / 10.0f;
-            sf::RectangleShape magnetBar(sf::Vector2f((PANEL_WIDTH - 20) * (1.0f - magnetProgress), 5));
-            magnetBar.setPosition(panelX, yPos + 28);
-            magnetBar.setFillColor(sf::Color(255, 165, 0));
-            window.draw(magnetBar);
-            
-            sf::RectangleShape magnetBorder(sf::Vector2f(PANEL_WIDTH - 20, 35));
-            magnetBorder.setPosition(panelX, yPos);
-            magnetBorder.setFillColor(sf::Color::Transparent);
-            magnetBorder.setOutlineColor(sf::Color(255, 165, 0));
-            magnetBorder.setOutlineThickness(2);
-            window.draw(magnetBorder);
-        }
+
     }
 };
 
