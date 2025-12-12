@@ -1032,7 +1032,7 @@ int main() {
             std::cerr << "Error: No se pudo cargar la música de fondo" << std::endl;
         } else {
             backgroundMusic->setLoop(true);
-            backgroundMusic->setVolume(50.0f);
+            backgroundMusic->setVolume(0.8f);
             backgroundMusic->play();
         }
     
