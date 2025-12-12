@@ -197,8 +197,8 @@ public:
         
         gameTimer += deltaTime;
         
-        speedLevel = 1 + (applesEaten / 5);
-        moveDelay = 10 - (speedLevel - 1) * 1;
+        speedLevel = 1 + (applesEaten / 10);
+        moveDelay = 10 - (speedLevel - 1) * 0.5f;
         if (moveDelay < 2) moveDelay = 2;
         
         if (wallPassActive) {
