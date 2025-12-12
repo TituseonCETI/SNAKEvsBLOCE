@@ -585,6 +585,25 @@ public:
         scoreBar.setPosition(panelX, yPos + 22);
         scoreBar.setFillColor(sf::Color::Green);
         window.draw(scoreBar);
+        // SCORE al final del panel
+        yPos += 30; // Espacio antes del score
+        sf::RectangleShape separator(sf::Vector2f(PANEL_WIDTH - 20, 1));
+        separator.setPosition(panelX, yPos);
+        separator.setFillColor(sf::Color::White);
+        window.draw(separator);
+
+        yPos += 5;
+
+        sf::RectangleShape scoreBg(sf::Vector2f(PANEL_WIDTH - 20, 25));
+        scoreBg.setPosition(panelX, yPos);
+        scoreBg.setFillColor(sf::Color(50, 50, 50));
+        window.draw(scoreBg);
+
+        int scoreBarWidth = (score / 10) % (PANEL_WIDTH - 20);
+        sf::RectangleShape scoreBar(sf::Vector2f(scoreBarWidth, 3));
+        scoreBar.setPosition(panelX, yPos + 22);
+        scoreBar.setFillColor(sf::Color::Green);
+        window.draw(scoreBar);
     }
 };
 
