@@ -500,26 +500,8 @@ public:
             window.draw(speedBar);
         }
         
-        yPos += 30;
-        
-        if (wallPassActive) {
-            sf::RectangleShape wallPassBg(sf::Vector2f(PANEL_WIDTH - 20, 35));
-            wallPassBg.setPosition(panelX, yPos);
-            wallPassBg.setFillColor(sf::Color(100, 100, 0));
-            window.draw(wallPassBg);
-            
-            float wallPassProgress = wallPassTimer / 10.0f;
-            sf::RectangleShape wallPassBar(sf::Vector2f((PANEL_WIDTH - 20) * (1.0f - wallPassProgress), 5));
-            wallPassBar.setPosition(panelX, yPos + 28);
-            wallPassBar.setFillColor(sf::Color::Yellow);
-            window.draw(wallPassBar);
-            
-            sf::RectangleShape wallPassBorder(sf::Vector2f(PANEL_WIDTH - 20, 35));
-            wallPassBorder.setPosition(panelX, yPos);
-            wallPassBorder.setFillColor(sf::Color::Transparent);
-            wallPassBorder.setOutlineColor(sf::Color::Yellow);
-            wallPassBorder.setOutlineThickness(2);
-            window.draw(wallPassBorder);
+        int yPos = 10;
+        yPos += 10;  // Un poco de espacio antes de las manzanas
             
             yPos += 40;
         }
