@@ -459,11 +459,16 @@ public:
         appleIndicator.setFillColor(sf::Color::Red);
         window.draw(appleIndicator);
         
-        for (int i = 0; i < applesEaten && i < 12; i++) {
-            sf::RectangleShape appleBar(sf::Vector2f(3, 10));
-            appleBar.setPosition(panelX + 18 + i * 3, yPos + 4);
-            appleBar.setFillColor(sf::Color::Red);
-            window.draw(appleBar);
+        int cubesPerRow = 10;
+        for (int i = 0; i < applesEaten && i < 50; i++) {
+            int xPos = panelX + 5 + (i % cubesPerRow) * 12;
+            int yPos_cube = yPos + 4 + (i / cubesPerRow) * 12;
+            sf::RectangleShape cube(sf::Vector2f(8, 8));
+            cube.setPosition(xPos, yPos_cube);
+            cube.setFillColor(sf::Color::Red);
+            cube.setOutlineColor(sf::Color::White);
+            cube.setOutlineThickness(1);
+            window.draw(cube);
         }
         
         // Mostrar puntos por manzana
