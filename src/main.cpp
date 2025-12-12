@@ -229,18 +229,32 @@ public:
         
         if (magnetActive && !snake.empty()) {
             SnakeSegment head = snake[0];
-            for (auto& block : blocks) {
+            std::vector<int> blocksToRemove;
+            for (int i = 0; i < blocks.size(); i++) {
+                auto& block = blocks[i];
                 int blockGridX = block.x / GRID_SIZE;
                 int blockGridY = block.y / GRID_SIZE;
-                
+
+                // Atraer hacia la cabeza
                 if (blockGridX < head.x) blockGridX++;
                 else if (blockGridX > head.x) blockGridX--;
-                
+
                 if (blockGridY < head.y) blockGridY++;
                 else if (blockGridY > head.y) blockGridY--;
-                
+
                 block.x = blockGridX * GRID_SIZE;
                 block.y = blockGridY * GRID_SIZE;
+
+                // Comer automáticamente si llega a la cabeza
+                if (block.x == head.x * GRID_SIZE && block.y == head.y * GRID_SIZE) {
+                    int points = doubleScoreActive ? 20 : 10;
+                    score += points;
+                    applesEaten++;
+                    blocksToRemove.push_back(i);
+                }
+            }
+            for (int i = blocksToRemove.size() - 1; i >= 0; i--) {
+                blocks.erase(blocks.begin() + blocksToRemove[i]);
             }
         }
         
