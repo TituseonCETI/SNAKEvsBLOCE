@@ -293,7 +293,7 @@ public:
                     }
                 }
                 
-                if (validPos && obstacles.size() < 5) {
+                if (validPos && obstacles.size() < 15) {
                     obstacles.push_back(Obstacle(randomX * GRID_SIZE, randomY * GRID_SIZE));
                 }
                 obstacleSpawnTimer = 0;
