@@ -251,30 +251,35 @@ public:
 
 class Rules {
 public:
+    // ========== TEXTURAS Y SPRITES ==========
+    sf::Texture texRulesImage;      // Textura de la imagen de reglas
+    sf::Sprite sprRulesImage;       // Sprite de la imagen de reglas
+    
+    // ========== CONSTRUCTOR ==========
+    // Carga la imagen de reglas
+    Rules() {
+        // Cargar textura de la imagen de reglas
+        if (!texRulesImage.loadFromFile("assets/images/reglas.png")) {
+            std::cerr << "Error: No se pudo cargar la imagen de reglas (reglas.png)" << std::endl;
+        }
+        
+        // Asignar textura al sprite
+        sprRulesImage.setTexture(texRulesImage);
+        
+        // Escalar la imagen al tamaño de la pantalla del juego (sin panel)
+        float scaleX = (float)WINDOW_WIDTH / texRulesImage.getSize().x;
+        float scaleY = (float)WINDOW_HEIGHT / texRulesImage.getSize().y;
+        sprRulesImage.setScale(scaleX, scaleY);
+        sprRulesImage.setPosition(0, 0);
+    }
+    
     // Dibuja la pantalla de reglas
     void draw(sf::RenderWindow& window) {
         // Limpia la pantalla
         window.clear(sf::Color::Black);
         
-        // Título oscuro
-        sf::RectangleShape titleBg(sf::Vector2f(SCREEN_WIDTH, 80));
-        titleBg.setPosition(0, 20);
-        titleBg.setFillColor(sf::Color(50, 50, 50));
-        window.draw(titleBg);
-        
-        // Caja principal para las reglas
-        sf::RectangleShape rulesBg(sf::Vector2f(SCREEN_WIDTH - 40, SCREEN_HEIGHT - 120));
-        rulesBg.setPosition(20, 120);
-        rulesBg.setFillColor(sf::Color(30, 30, 30));
-        rulesBg.setOutlineColor(sf::Color::White);
-        rulesBg.setOutlineThickness(2);
-        window.draw(rulesBg);
-        
-        // Caja de instrucción de salida (inferior)
-        sf::RectangleShape exitBg(sf::Vector2f(SCREEN_WIDTH - 40, 50));
-        exitBg.setPosition(20, SCREEN_HEIGHT - 60);
-        exitBg.setFillColor(sf::Color(50, 50, 0));
-        window.draw(exitBg);
+        // Dibuja la imagen de reglas escalada al tamaño del fondo
+        window.draw(sprRulesImage);
     }
 };
 
