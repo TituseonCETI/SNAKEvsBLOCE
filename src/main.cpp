@@ -442,7 +442,24 @@ public:
         
         int panelX = panelStartX + 15;
         int yPos = 10;
-        yPos += 10;  // Un poco de espacio antes de las manzanas
+        
+        sf::RectangleShape separator(sf::Vector2f(PANEL_WIDTH - 20, 1));
+        separator.setPosition(panelX, yPos + 25);
+        separator.setFillColor(sf::Color::White);
+        window.draw(separator);
+        
+        sf::RectangleShape scoreBg(sf::Vector2f(PANEL_WIDTH - 20, 25));
+        scoreBg.setPosition(panelX, yPos);
+        scoreBg.setFillColor(sf::Color(50, 50, 50));
+        window.draw(scoreBg);
+        
+        int scoreBarWidth = (score / 10) % (PANEL_WIDTH - 20);
+        sf::RectangleShape scoreBar(sf::Vector2f(scoreBarWidth, 3));
+        scoreBar.setPosition(panelX, yPos + 22);
+        scoreBar.setFillColor(sf::Color::Green);
+        window.draw(scoreBar);
+        
+        yPos += 35;
         
         sf::RectangleShape applesBox(sf::Vector2f(50, 18));
         applesBox.setPosition(panelX, yPos);
@@ -500,8 +517,26 @@ public:
             window.draw(speedBar);
         }
         
-        int yPos = 10;
-        yPos += 10;  // Un poco de espacio antes de las manzanas
+        yPos += 30;
+        
+        if (wallPassActive) {
+            sf::RectangleShape wallPassBg(sf::Vector2f(PANEL_WIDTH - 20, 35));
+            wallPassBg.setPosition(panelX, yPos);
+            wallPassBg.setFillColor(sf::Color(100, 100, 0));
+            window.draw(wallPassBg);
+            
+            float wallPassProgress = wallPassTimer / 10.0f;
+            sf::RectangleShape wallPassBar(sf::Vector2f((PANEL_WIDTH - 20) * (1.0f - wallPassProgress), 5));
+            wallPassBar.setPosition(panelX, yPos + 28);
+            wallPassBar.setFillColor(sf::Color::Yellow);
+            window.draw(wallPassBar);
+            
+            sf::RectangleShape wallPassBorder(sf::Vector2f(PANEL_WIDTH - 20, 35));
+            wallPassBorder.setPosition(panelX, yPos);
+            wallPassBorder.setFillColor(sf::Color::Transparent);
+            wallPassBorder.setOutlineColor(sf::Color::Yellow);
+            wallPassBorder.setOutlineThickness(2);
+            window.draw(wallPassBorder);
             
             yPos += 40;
         }
@@ -546,27 +581,7 @@ public:
             magnetBorder.setOutlineColor(sf::Color(255, 165, 0));
             magnetBorder.setOutlineThickness(2);
             window.draw(magnetBorder);
-            yPos += 40;
         }
-        // SCORE al final del panel
-        yPos += 30; // Espacio antes del score
-        sf::RectangleShape separator(sf::Vector2f(PANEL_WIDTH - 20, 1));
-        separator.setPosition(panelX, yPos);
-        separator.setFillColor(sf::Color::White);
-        window.draw(separator);
-
-        yPos += 5;
-
-        sf::RectangleShape scoreBg(sf::Vector2f(PANEL_WIDTH - 20, 25));
-        scoreBg.setPosition(panelX, yPos);
-        scoreBg.setFillColor(sf::Color(50, 50, 50));
-        window.draw(scoreBg);
-
-        int scoreBarWidth = (score / 10) % (PANEL_WIDTH - 20);
-        sf::RectangleShape scoreBar(sf::Vector2f(scoreBarWidth, 3));
-        scoreBar.setPosition(panelX, yPos + 22);
-        scoreBar.setFillColor(sf::Color::Green);
-        window.draw(scoreBar);
     }
 };
 
