@@ -1,28 +1,33 @@
-CXX = g++
-CXXFLAGS = -std=c++17 -O2 -Iinclude -Wall
-LDFLAGS = -lsfml-graphics -lsfml-window -lsfml-system -lsfml-audio
+CXX := g++
+CXXFLAGS := -std=c++17 -Wall -O2
+LDFLAGS := -lmingw32 -lsfml-main -lsfml-graphics -lsfml-window -lsfml-system -lsfml-audio
 
-SRCDIR = src
-OBJDIR = build
-BINDIR = bin
+SRC_DIR := src
+BIN_DIR := bin
+BUILD_DIR := build
 
-SOURCES = $(wildcard $(SRCDIR)/*.cpp)
-OBJECTS = $(patsubst $(SRCDIR)/%.cpp,$(OBJDIR)/%.o,$(SOURCES))
+SOURCES := $(wildcard $(SRC_DIR)/*.cpp)
+OBJECTS := $(SOURCES:$(SRC_DIR)/%.cpp=$(BUILD_DIR)/%.o)
+EXECUTABLE := $(BIN_DIR)/main.exe
 
-TARGET = $(BINDIR)/snakevsblock
+all: $(EXECUTABLE)
 
-all: dirs $(TARGET)
+$(BUILD_DIR):
+	mkdir -p $(BUILD_DIR)
 
-dirs:
-	mkdir -p $(OBJDIR) $(BINDIR)
+$(BIN_DIR):
+	mkdir -p $(BIN_DIR)
 
-$(TARGET): $(OBJECTS)
-	$(CXX) $(CXXFLAGS) -o $@ $^ $(LDFLAGS)
-
-$(OBJDIR)/%.o: $(SRCDIR)/%.cpp
+$(BUILD_DIR)/%.o: $(SRC_DIR)/%.cpp | $(BUILD_DIR)
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
-clean:
-	rm -rf $(OBJDIR) $(BINDIR)
+$(EXECUTABLE): $(OBJECTS) | $(BIN_DIR)
+	$(CXX) $(CXXFLAGS) $(OBJECTS) -o $@ $(LDFLAGS)
 
-.PHONY: all clean dirs
+run: $(EXECUTABLE)
+	./$(EXECUTABLE)
+
+clean:
+	rm -rf $(BUILD_DIR) $(BIN_DIR)
+
+.PHONY: all run clean
