@@ -167,7 +167,7 @@ public:
     float blockSpawnTimer = 0;
     float blockSpawnDelay = 1.0f;
     float powerUpSpawnTimer = 0;
-    float powerUpSpawnDelay = 5.0f;
+    float powerUpSpawnDelay = 15.0f;
     float obstacleSpawnTimer = 0;
     float obstacleSpawnDelay = 8.0f;
     float gameTimer = 0;
