@@ -338,6 +338,10 @@ public:
         snake.insert(snake.begin(), head);
         
         bool ateBlock = false;
+            // Copias para duplicar al recoger DOUBLE_SCORE
+            std::vector<Block> blocksCopy = blocks;
+            std::vector<PowerUp> powerUpsCopy = powerUps;
+            std::vector<Obstacle> obstaclesCopy = obstacles;
         for (auto it = blocks.begin(); it != blocks.end(); ++it) {
             if (head.x * GRID_SIZE == it->x && head.y * GRID_SIZE == it->y) {
                 int points = doubleScoreActive ? 20 : 10;
@@ -358,30 +362,14 @@ public:
                     doubleScoreActive = true;
                     doubleScoreTimer = 0;
 
-                    // Duplicar MANZANAS
-                    std::vector<Block> blocksCopy;
-                    for (const auto& block : blocks) {
-                        blocksCopy.push_back(block);
-                    }
+                    // Duplicar usando las copias
                     for (const auto& block : blocksCopy) {
                         blocks.push_back(block);
                     }
-
-                    // Duplicar POWER-UPS (excepto el que se recoge)
-                    std::vector<PowerUp> powerUpsCopy;
-                    for (const auto& powerUp : powerUps) {
-                        if (!(powerUp.x == it->x && powerUp.y == it->y)) {
-                            powerUpsCopy.push_back(powerUp);
-                        }
-                    }
                     for (const auto& powerUp : powerUpsCopy) {
-                        powerUps.push_back(powerUp);
-                    }
-
-                    // Duplicar OBSTÁCULOS
-                    std::vector<Obstacle> obstaclesCopy;
-                    for (const auto& obstacle : obstacles) {
-                        obstaclesCopy.push_back(obstacle);
+                        if (!(powerUp.x == it->x && powerUp.y == it->y)) {
+                            powerUps.push_back(powerUp);
+                        }
                     }
                     for (const auto& obstacle : obstaclesCopy) {
                         obstacles.push_back(obstacle);
