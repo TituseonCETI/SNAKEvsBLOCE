@@ -493,7 +493,7 @@ public:
         speedLabel.setFillColor(sf::Color::Yellow);
         window.draw(speedLabel);
         
-        for (int i = 0; i < speedLevel && i < 8; i++) {
+        int yPos = 10;  // Un poco de espacio antes de las manzanas
             sf::RectangleShape speedBar(sf::Vector2f(8, 12));
             speedBar.setPosition(panelX + i * 10, yPos + 8);
             speedBar.setFillColor(sf::Color::Yellow);
