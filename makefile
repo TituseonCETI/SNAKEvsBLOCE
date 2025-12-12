@@ -1,29 +1,37 @@
-# Directorios de origen y destino
-SRC_DIR := src
-BIN_DIR := bin
+CXX = g++
+CXXFLAGS = -std=c++17 -O2 -Iinclude
+LDFLAGS = -lsfml-graphics -lsfml-window -lsfml-system -lsfml-audio
 
-SFML := -lsfml-graphics -lsfml-window -lsfml-system -lsfml-audio -lbox2d
 
-# Obtener todos los archivos .cpp en el directorio de origen
-CPP_FILES := $(wildcard $(SRC_DIR)/*.cpp)
+SRCDIR = src
+OBJDIR = build
+BINDIR = bin
 
-# Generar los nombres de los archivos .exe en el directorio de destino
-EXE_FILES := $(patsubst $(SRC_DIR)/%.cpp,$(BIN_DIR)/%.exe,$(CPP_FILES))
 
-# Regla para compilar cada archivo .cpp y generar el archivo .exe correspondiente
-$(BIN_DIR)/%.exe: $(SRC_DIR)/%.cpp
-	g++ $< -o $@ $(SFML) -Iinclude
+SOURCES = $(wildcard $(SRCDIR)/*.cpp)
+OBJECTS = $(patsubst $(SRCDIR)/%.cpp,$(OBJDIR)/%.o,$(SOURCES))
 
-# Regla por defecto para compilar todos los archivos .cpp
-all: $(EXE_FILES)
 
-# Regla para ejecutar cada archivo .exe
-run%: $(BIN_DIR)/%.exe
-	./$<
+TARGET = $(BINDIR)/snakevsblock
 
-# Regla para limpiar los archivos generados
+
+all: dirs $(TARGET)
+
+
+dirs:
+mkdir -p $(OBJDIR) $(BINDIR)
+
+
+$(TARGET): $(OBJECTS)
+$(CXX) $(CXXFLAGS) -o $@ $^ $(LDFLAGS)
+
+
+$(OBJDIR)/%.o: $(SRCDIR)/%.cpp
+$(CXX) $(CXXFLAGS) -c $< -o $@
+
+
 clean:
-	rm -f $(EXE_FILES)
+rm -rf $(OBJDIR) $(BINDIR)
 
-.PHONY: all clean
-.PHONY: run-%
+
+.PHONY: all clean dirs
