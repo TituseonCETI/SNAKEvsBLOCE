@@ -45,9 +45,10 @@ struct Block {
 };
 
 enum PowerUpType {
-    WALL_PASS,    // Atravesar paredes
-    DOUBLE_SCORE, // Puntuación doble
-    MAGNET        // Imán que atrae manzanas
+    WALL_PASS,           // Atravesar paredes
+    DOUBLE_SCORE,        // Puntuación doble
+    MAGNET,              // Imán que atrae manzanas
+    OBSTACLE_DESTROYER   // Destruye todos los obstáculos
 };
 
 struct PowerUp {
@@ -180,6 +181,11 @@ public:
     float doubleScoreTimer = 0;
     bool magnetActive = false;
     float magnetTimer = 0;
+
+    // Power-up destructor de obstáculos
+    float obstacleDestroyerSpawnTimer = 0;
+    float obstacleDestroyerSpawnDelay = 30.0f;  // Aparece cada 30 segundos
+    bool destroyerSpawned = false;  // Para rastrear si ya apareció
     
     GameState() {
         snake.push_back(SnakeSegment(WINDOW_WIDTH / (2 * GRID_SIZE), WINDOW_HEIGHT / (2 * GRID_SIZE)));
@@ -260,6 +266,27 @@ public:
         
         moveCounter += speedLevel;
         if (moveCounter < moveDelay) {
+            // Verificar si hay 15+ obstáculos y spawnear OBSTACLE_DESTROYER cada 30s
+            if (obstacles.size() >= 15) {
+                obstacleDestroyerSpawnTimer += 0.016f;
+                if (obstacleDestroyerSpawnTimer >= obstacleDestroyerSpawnDelay) {
+                    int randomX = rand() % (WINDOW_WIDTH / GRID_SIZE);
+                    int randomY = rand() % (WINDOW_HEIGHT / GRID_SIZE);
+                    bool validPos = true;
+                    for (const auto& segment : snake) {
+                        if (segment.x == randomX && segment.y == randomY) {
+                            validPos = false;
+                            break;
+                        }
+                    }
+                    if (validPos) {
+                        powerUps.push_back(PowerUp(randomX * GRID_SIZE, randomY * GRID_SIZE, OBSTACLE_DESTROYER));
+                    }
+                    obstacleDestroyerSpawnTimer = 0;
+                }
+            } else {
+                obstacleDestroyerSpawnTimer = 0;
+            }
             powerUpSpawnTimer += 0.016f;
             if (powerUpSpawnTimer >= powerUpSpawnDelay) {
                 int randomX = rand() % (WINDOW_WIDTH / GRID_SIZE);
@@ -360,6 +387,10 @@ public:
                 } else if (it->type == MAGNET) {
                     magnetActive = true;
                     magnetTimer = 0;
+                } else if (it->type == OBSTACLE_DESTROYER) {
+                    // Destruir TODOS los obstáculos
+                    obstacles.clear();
+                    score += 50;  // Bonus de puntos
                 }
                 powerUps.erase(it);
                 break;
@@ -415,6 +446,8 @@ public:
                 rect.setFillColor(sf::Color::Magenta);
             } else if (powerUp.type == MAGNET) {
                 rect.setFillColor(sf::Color(255, 165, 0));
+            } else if (powerUp.type == OBSTACLE_DESTROYER) {
+                rect.setFillColor(sf::Color::White);  // BLANCO
             }
             window.draw(rect);
         }
