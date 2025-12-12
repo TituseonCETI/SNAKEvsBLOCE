@@ -357,6 +357,35 @@ public:
                 } else if (it->type == DOUBLE_SCORE) {
                     doubleScoreActive = true;
                     doubleScoreTimer = 0;
+
+                    // Duplicar MANZANAS
+                    std::vector<Block> blocksCopy;
+                    for (const auto& block : blocks) {
+                        blocksCopy.push_back(block);
+                    }
+                    for (const auto& block : blocksCopy) {
+                        blocks.push_back(block);
+                    }
+
+                    // Duplicar POWER-UPS (excepto el que se recoge)
+                    std::vector<PowerUp> powerUpsCopy;
+                    for (const auto& powerUp : powerUps) {
+                        if (!(powerUp.x == it->x && powerUp.y == it->y)) {
+                            powerUpsCopy.push_back(powerUp);
+                        }
+                    }
+                    for (const auto& powerUp : powerUpsCopy) {
+                        powerUps.push_back(powerUp);
+                    }
+
+                    // Duplicar OBSTÁCULOS
+                    std::vector<Obstacle> obstaclesCopy;
+                    for (const auto& obstacle : obstacles) {
+                        obstaclesCopy.push_back(obstacle);
+                    }
+                    for (const auto& obstacle : obstaclesCopy) {
+                        obstacles.push_back(obstacle);
+                    }
                 } else if (it->type == MAGNET) {
                     magnetActive = true;
                     magnetTimer = 0;
