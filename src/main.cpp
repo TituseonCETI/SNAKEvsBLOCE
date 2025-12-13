@@ -864,7 +864,10 @@ public:
     int finalApplesEaten = 0;
     int selectedOption = 0;  // 0 = Reiniciar, 1 = Salir
     
-    // ========== TEXTURAS Y SPRITES DE BOTONES ==========
+    // ========== TEXTURAS Y SPRITES ==========
+    sf::Texture texLoserImage;      // Textura de la imagen "loser.png"
+    sf::Sprite sprLoserImage;       // Sprite de la imagen "loser.png"
+    
     sf::Texture texRestartButton;   // Textura del botón "REINICIAR"
     sf::Sprite sprRestartButton;    // Sprite del botón "REINICIAR"
     
@@ -874,6 +877,12 @@ public:
     // ========== CONSTRUCTOR ==========
     // Carga las texturas y configura los sprites
     GameOverMenu() {
+        // Cargar textura de la imagen loser.png
+        if (!texLoserImage.loadFromFile("assets/images/loser.png")) {
+            std::cerr << "Error: No se pudo cargar la imagen loser.png" << std::endl;
+        }
+        sprLoserImage.setTexture(texLoserImage);
+        
         // Cargar texturas desde archivos
         texRestartButton.loadFromFile("assets/images/Boton.iniciar.png");
         texExitButton.loadFromFile("assets/images/Boton.salir.png");
@@ -888,126 +897,33 @@ public:
         isVisible = true;
         finalScore = score;
         finalApplesEaten = applesEaten;
-        selectedOption = 0;
+        selectedOption = 1;  // Seleccionar solo la opción SALIR
     }
     
     // Maneja entrada del usuario en la pantalla de game over
     void handleInput(sf::Keyboard::Scancode key) {
-        // Flecha izquierda/arriba: selecciona "REINICIAR" (opción 0)
-        if (key == sf::Keyboard::Scan::Left || key == sf::Keyboard::Scan::Up) {
-            selectedOption = 0;
-        } 
-        // Flecha derecha/abajo: selecciona "SALIR" (opción 1)
-        else if (key == sf::Keyboard::Scan::Right || key == sf::Keyboard::Scan::Down) {
-            selectedOption = 1;
-        }
+        // Solo hay una opción: SALIR
+        selectedOption = 1;
     }
     
-    // Dibuja la pantalla de game over con información del juego finalizado
+    // Dibuja la pantalla de game over con la imagen loser.png
     void draw(sf::RenderWindow& window) {
         if (!isVisible) return;  // No dibujar si no está visible
         
-        // Fondo oscuro semitransparente (oscurece el juego de fondo)
-        sf::RectangleShape background(sf::Vector2f(SCREEN_WIDTH, SCREEN_HEIGHT));
-        background.setFillColor(sf::Color(0, 0, 0, 150));
-        window.draw(background);
+        // Escalar y posicionar la imagen loser.png para que cubra el área de juego
+        float scaleX = (float)WINDOW_WIDTH / texLoserImage.getSize().x;
+        float scaleY = (float)WINDOW_HEIGHT / texLoserImage.getSize().y;
+        sprLoserImage.setScale(scaleX, scaleY);
+        sprLoserImage.setPosition(0, 0);
         
-        // Cuadro principal del menú de game over
-        int menuWidth = 500;
-        int menuHeight = 400;
-        int menuX = (SCREEN_WIDTH - menuWidth) / 2;
-        int menuY = (SCREEN_HEIGHT - menuHeight) / 2;
+        // Dibujar la imagen loser.png
+        window.draw(sprLoserImage);
         
-        sf::RectangleShape menuBox(sf::Vector2f(menuWidth, menuHeight));
-        menuBox.setPosition(menuX, menuY);
-        menuBox.setFillColor(sf::Color(30, 30, 30));
-        menuBox.setOutlineColor(sf::Color::Red);
-        menuBox.setOutlineThickness(3);
-        window.draw(menuBox);
-        
-        // Título "GAME OVER" (fondo rojo)
-        sf::RectangleShape titleBg(sf::Vector2f(menuWidth, 60));
-        titleBg.setPosition(menuX, menuY);
-        titleBg.setFillColor(sf::Color::Red);
-        window.draw(titleBg);
-        
-        // Sección de puntuación
-        int yOffset = menuY + 80;
-        
-        // Label "SCORE:"
-        sf::RectangleShape scoreLabel(sf::Vector2f(150, 20));
-        scoreLabel.setPosition(menuX + 20, yOffset);
-        scoreLabel.setFillColor(sf::Color::Green);
-        window.draw(scoreLabel);
-        
-        std::ostringstream scoreStr;
-        scoreStr << "SCORE: " << finalScore;
-        
-        // Línea visual para el score
-        yOffset += 30;
-        sf::RectangleShape scoreLine(sf::Vector2f(300, 2));
-        scoreLine.setPosition(menuX + 100, yOffset);
-        scoreLine.setFillColor(sf::Color::Green);
-        window.draw(scoreLine);
-        
-        // Sección de manzanas comidas
-        yOffset += 40;
-        sf::RectangleShape applesLabel(sf::Vector2f(200, 20));
-        applesLabel.setPosition(menuX + 20, yOffset);
-        applesLabel.setFillColor(sf::Color::Yellow);
-        window.draw(applesLabel);
-        
-        std::ostringstream applesStr;
-        applesStr << "MANZANAS: " << finalApplesEaten;
-        
-        // Línea visual para las manzanas
-        yOffset += 30;
-        sf::RectangleShape applesLine(sf::Vector2f(300, 2));
-        applesLine.setPosition(menuX + 100, yOffset);
-        applesLine.setFillColor(sf::Color::Yellow);
-        window.draw(applesLine);
-        
-        // ========== POSICIONAMIENTO Y DIBUJO DE BOTONES ==========
-        yOffset += 50;
-        
-        // Obtener dimensiones de los botones para centrarlos
-        float buttonWidth = sprRestartButton.getLocalBounds().width;
-        float buttonHeight = sprRestartButton.getLocalBounds().height;
-        
-        // Array de sprites para facilitar el manejo
-        std::vector<sf::Sprite*> sprites = {&sprRestartButton, &sprExitButton};
-        
-        // Posicionar y dibujar los botones (lado a lado)
-        for (int i = 0; i < 2; i++) {
-            // Botones lado a lado (izquierda y derecha)
-            float posX = menuX + 50 + i * 250;
-            float posY = yOffset;
-            
-            sprites[i]->setPosition(posX, posY);
-            
-            // Si está seleccionado, aplicar efecto de resaltado
-            if (i == selectedOption) {
-                // Resaltar con escala aumentada
-                sprites[i]->setScale(1.1f, 1.1f);
-                sprites[i]->setColor(sf::Color::White);
-                
-                // Dibujar un borde blanco de resaltado alrededor del botón
-                sf::RectangleShape highlightBorder(sf::Vector2f(buttonWidth * 1.1f, buttonHeight * 1.1f));
-                highlightBorder.setPosition(posX - (buttonWidth * 0.05f), posY - (buttonHeight * 0.05f));
-                highlightBorder.setFillColor(sf::Color::Transparent);
-                highlightBorder.setOutlineColor(sf::Color::White);
-                highlightBorder.setOutlineThickness(3);
-                window.draw(highlightBorder);
-            } 
-            // Si no está seleccionado, mostrar con opacidad normal
-            else {
-                sprites[i]->setScale(1.0f, 1.0f);
-                sprites[i]->setColor(sf::Color(200, 200, 200));  // Ligeramente oscurecido
-            }
-            
-            // Dibujar el sprite del botón
-            window.draw(*sprites[i]);
-        }
+        // Fondo oscuro semitransparente en el panel lateral
+        sf::RectangleShape panelBg(sf::Vector2f(PANEL_WIDTH, SCREEN_HEIGHT));
+        panelBg.setPosition(WINDOW_WIDTH * SCALE_X, 0);
+        panelBg.setFillColor(sf::Color(0, 0, 0, 150));
+        window.draw(panelBg);
     }
 };
 
@@ -1097,22 +1013,10 @@ int main() {
                     if (game.gameOver) {
                         // Si el juego terminó, mostrar pantalla de game over
                         if (event.key.scancode == sf::Keyboard::Scan::Enter) {
-                            int option = gameOverMenu.selectedOption;
-                            if (option == 0) {
-                                // Reiniciar juego
-                                gameState = PLAYING;
-                                game = GameState();
-                                gameOverMenu.isVisible = false;
-                            } else if (option == 1) {
-                                // Salir al menú
-                                gameState = MENU;
-                                game = GameState();
-                                gameOverMenu.isVisible = false;
-                                menu.selectedOption = 0;
-                            }
-                        } else {
-                            // Navegar en opciones de game over
-                            gameOverMenu.handleInput(event.key.scancode);
+                            // ENTER: Reiniciar juego
+                            gameState = PLAYING;
+                            game = GameState();
+                            gameOverMenu.isVisible = false;
                         }
                     } else {
                         // Juego en progreso: manejar movimiento
