@@ -1,8 +1,7 @@
 // ============================================================
 // SNAKE vs BLOCKS - Juego en C++ con SFML 3.0.2
 // ============================================================
-// Un juego de serpiente mejorado con obstáculos, power-ups,
-// y un sistema de puntuación progresivo.
+// Un juego de serpiente mejorado con obstáculos y power-ups
 // ============================================================
 
 // ============================================================
@@ -953,7 +952,7 @@ int main() {
             std::cerr << "Error: No se pudo cargar la música de fondo" << std::endl;
         } else {
             backgroundMusic->setLoop(true);
-            backgroundMusic->setVolume(0.8f);
+            backgroundMusic->setVolume(5.0f);
             backgroundMusic->play();
         }
     
