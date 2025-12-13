@@ -3,7 +3,7 @@ name: Publicar en Galería CETUS
 
 on:
   push:
-    branches: [master]
+    branches: [main]
   workflow_dispatch:
 
 permissions:
